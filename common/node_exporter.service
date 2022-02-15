@@ -1,0 +1,13 @@
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/etc/node_exporter/
+ExecStart=/usr/local/bin/node_exporter \
+    --web.config /etc/node_exporter/node_exporter.yml
+
+[Install]
+WantedBy=multi-user.target
