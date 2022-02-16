@@ -1,33 +1,12 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
-rule_files:
-  - rules.yml
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-          - localhost:9093
 scrape_configs:
-  - job_name: "alertmanager"
-    static_configs:
-      - targets: ["localhost:9093"]
-  - job_name: "grafana"
-    static_configs:
-      - targets: ["localhost:3000"]
   - job_name: "node_exporter"
     scheme: https
     static_configs:
       - targets: ["node.pki.vagrant:9100"]
     tls_config:
+      cert_file: /etc/node_exporter/ssl/node.pki.vagrant.cert
+      key_file: /etc/node_exporter/ssl/node.pki.vagrant.key
       ca_file: /etc/prometheus/ssl/intermediate.cert.pem
-  - job_name: "prometheus"
-    static_configs:
-      - targets: ["localhost:9090"]
-  - job_name: vault
-    metrics_path: /v1/sys/metrics
-    params:
-      format: ['prometheus']
-    bearer_token: "insert.here"
-    static_configs:
-      - targets: ["localhost:8200"]

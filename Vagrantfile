@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "insecure", type: "shell", inline: <<-SHELL
     sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-    sudo yum install -y epel-release terraform yum-utils wget
+    sudo yum install -y epel-release yum-utils wget
 
     if [ ! $(systemctl is-active vault) = "active" ]; then
       sudo yum -y install vault
@@ -30,29 +30,6 @@ Vagrant.configure("2") do |config|
       /usr/bin/vault operator unseal "$VAULT_KEY"
       echo $VAULT_TOKEN > /etc/vault_token.txt
       echo $VAULT_KEY > /etc/vault_key.txt
-      # (cd /vagrant_data/terraform; terraform init;terraform apply -auto-approve)
-    fi
-
-    if [ ! $(systemctl is-active grafana-server) = "active" ]; then
-      wget https://dl.grafana.com/oss/release/grafana-8.3.6-1.x86_64.rpm
-      sudo yum install -y grafana-8.3.6-1.x86_64.rpm
-      sudo cp /vagrant_data/common/grafana.ini /etc/grafana/grafana.ini
-      sudo cp /vagrant_data/common/dashboards.yaml /etc/grafana/provisioning/dashboards
-      sudo cp /vagrant_data/insecure/datasources.yaml /etc/grafana/provisioning/datasources
-      sudo chown -R root:grafana /etc/grafana
-      sudo systemctl enable grafana-server
-      sudo systemctl restart grafana-server
-    fi
-
-    if [ ! $(systemctl is-active alertmanager) = "active" ]; then
-      wget https://github.com/prometheus/alertmanager/releases/download/v0.23.0/alertmanager-0.23.0.linux-amd64.tar.gz
-      tar xvf alertmanager-0.23.0.linux-amd64.tar.gz
-      sudo cp alertmanager-0.23.0.linux-amd64/alertmanager /usr/local/bin/alertmanager
-      sudo cp /vagrant_data/common/alertmanager.service /etc/systemd/system/alertmanager.service
-      sudo mkdir -p /etc/alertmanager/
-      sudo cp /vagrant_data/insecure/alertmanager.yml /etc/alertmanager/alertmanager.yml
-      sudo systemctl enable alertmanager
-      sudo systemctl restart alertmanager
     fi
 
     if [ ! $(systemctl is-active node_exporter) = "active" ]; then
@@ -67,21 +44,18 @@ Vagrant.configure("2") do |config|
     fi
     
     if [ ! $(systemctl is-active prometheus) = "active" ]; then
-      export VAULT_TOKEN=$(cat /etc/vault_token.txt)
       wget https://github.com/prometheus/prometheus/releases/download/v2.33.3/prometheus-2.33.3.linux-amd64.tar.gz
       tar xvf prometheus-2.33.3.linux-amd64.tar.gz
       sudo cp prometheus-2.33.3.linux-amd64/prometheus /usr/local/bin/prometheus
       sudo cp /vagrant_data/common/prometheus.service /etc/systemd/system/prometheus.service
       sudo mkdir -p /etc/prometheus/
       sudo cp /vagrant_data/insecure/prometheus.yml /etc/prometheus/prometheus.yml
-      sudo sed -i "s/insert.here/${VAULT_TOKEN}/g" /etc/prometheus/prometheus.yml
-      sudo cp /vagrant_data/common/rules.yml /etc/prometheus/rules.yml
       sudo systemctl enable prometheus
       sudo systemctl restart prometheus
     fi
   SHELL
   config.vm.provision "secure", type: "shell", run: "never", inline: <<-SHELL
-    sudo yum install jq -y
+    sudo yum install jq unzip -y
     export VAULT_ADDR=http://localhost:8200
     export VAULT_TOKEN=$(cat /etc/vault_token.txt)
     vault secrets enable pki
@@ -108,10 +82,20 @@ Vagrant.configure("2") do |config|
     # vault write pki_int/issue/pki-dot-vagrant common_name="node.pki.vagrant" ttl="24h"
     sudo mkdir -p /etc/prometheus/ssl
     sudo cp /home/vagrant/intermediate.cert.pem /etc/prometheus/ssl
+    sudo mkdir -p /etc/node_exporter/ssl
     sudo cp /vagrant_data/tls/node_exporter.yml /etc/node_exporter/node_exporter.yml
     sudo systemctl restart node_exporter
     sudo cp /vagrant_data/tls/prometheus.yml /etc/prometheus/prometheus.yml
-    sudo sed -i "s/insert.here/${VAULT_TOKEN}/g" /etc/prometheus/prometheus.yml
     sudo systemctl restart prometheus
+    if [ ! $(systemctl is-active consul-template) = "active" ]; then
+      wget https://releases.hashicorp.com/consul-template/0.27.2/consul-template_0.27.2_linux_amd64.zip
+      unzip -o consul-template_0.27.2_linux_amd64.zip
+      sudo cp consul-template /usr/local/bin/consul-template
+      sudo cp /vagrant_data/common/consul-template.service /etc/systemd/system/consul-template.service
+      sudo mkdir -p /etc/consul-template
+      sudo cp /vagrant_data/common/node-exporter.hcl /etc/consul-template
+      sudo systemctl enable consul-template
+      sudo systemctl restart consul-template
+    fi
   SHELL
 end

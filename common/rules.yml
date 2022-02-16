@@ -1,9 +1,0 @@
----
-groups:
-- name: AllInstances
-  rules:
-  - alert: PrometheusAlertmanagerE2eDeadManSwitch
-    expr: vector(1)
-    for: 0m
-    labels:
-      severity: info
