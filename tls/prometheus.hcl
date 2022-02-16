@@ -17,17 +17,17 @@ syslog {
 template {
     contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=prometheus.pki.vagrant\" }}{{ .Data.certificate }}{{ end }}"
     destination="/etc/prometheus/ssl/node.pki.vagrant.cert"
-    command = "systemctl restart prometheus"
+    command = "killall -HUP prometheus"
 }
 
 template {
     contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=prometheus.pki.vagrant\" }}{{ .Data.issuing_ca }}{{ end }}"
     destination="/etc/prometheus/ssl/ca.cert"
-    command = "systemctl restart prometheus"
+    command = "killall -HUP prometheus"
 }
 
 template {
     contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=prometheus.pki.vagrant\" }}{{ .Data.private_key }}{{ end }}"
     destination="/etc/prometheus/ssl/node.pki.vagrant.key"
-    command = "systemctl restart prometheus"
+    command = "killall -HUP prometheus"
 }

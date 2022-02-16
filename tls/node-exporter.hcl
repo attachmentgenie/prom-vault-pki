@@ -17,17 +17,17 @@ syslog {
 template {
     contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=node.pki.vagrant\" }}{{ .Data.certificate }}{{ end }}"
     destination="/etc/node_exporter/ssl/node.pki.vagrant.cert"
-    command = "systemctl restart node_exporter"
+    command = "killall -HUP node_exporter"
 }
 
 template {
     contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=node.pki.vagrant\" }}{{ .Data.issuing_ca }}{{ end }}"
     destination="/etc/node_exporter/ssl/ca.cert"
-    command = "systemctl restart node_exporter"
+    command = "killall -HUP node_exporter"
 }
 
 template {
     contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=node.pki.vagrant\" }}{{ .Data.private_key }}{{ end }}"
     destination="/etc/node_exporter/ssl/node.pki.vagrant.key"
-    command = "systemctl restart node_exporter"
+    command = "killall -HUP node_exporter"
 }
