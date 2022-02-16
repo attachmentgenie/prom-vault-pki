@@ -7,6 +7,6 @@ scrape_configs:
     static_configs:
       - targets: ["node.pki.vagrant:9100"]
     tls_config:
-      cert_file: /etc/node_exporter/ssl/node.pki.vagrant.cert
-      key_file: /etc/node_exporter/ssl/node.pki.vagrant.key
-      ca_file: /etc/prometheus/ssl/intermediate.cert.pem
+      cert_file: /etc/prometheus/ssl/node.pki.vagrant.cert
+      key_file: /etc/prometheus/ssl/node.pki.vagrant.key
+      ca_file: /etc/prometheus/ssl/ca.cert

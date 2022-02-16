@@ -1,0 +1,1 @@
+path "pki_int*" {  capabilities = ["create", "read", "update", "delete", "list", "sudo"]}

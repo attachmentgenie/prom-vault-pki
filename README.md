@@ -6,6 +6,6 @@ This talk will focus on on creating a secure prometheus exporter ecosystem using
 
 # TLDR
 
-    node_exporter => http://192.168.56.10:9100/metrics
-    prometheus    => http://192.168.56.10:9090  
-    vault         => http://192.168.56.10:8200
+    node_exporter => https://node.pki.vagrant:9100/metrics
+    prometheus    => http://prometheus.pki.vagrant:9090/  
+    vault         => http://prometheus.pki.vagrant:8200/

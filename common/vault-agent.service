@@ -1,0 +1,12 @@
+[Unit]
+Description="Vault Agent to serve Tokens"
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/etc/vault.d
+ExecStart=/usr/bin/vault agent -config=/etc/vault.d/certs.hcl
+
+[Install]
+WantedBy=multi-user.target
