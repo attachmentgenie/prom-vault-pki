@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: "insecure"
+    static_configs:
+      - targets: ["insecure.pki.vagrant:9100"]
+  - job_name: "tls"
+    scheme: https
+    static_configs:
+      - targets: ["tls.pki.vagrant:9100"]
+    tls_config:
+      cert_file: /etc/prometheus/ssl/prometheus.pki.vagrant.cert
+      key_file: /etc/prometheus/ssl/prometheus.pki.vagrant.key
+      ca_file: /etc/prometheus/ssl/ca.cert
