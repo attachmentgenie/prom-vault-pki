@@ -15,19 +15,19 @@ syslog {
     facility = "LOCAL5"
 }
 template {
-    contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=node.pki.vagrant\" }}{{ .Data.certificate }}{{ end }}"
-    destination="/etc/node_exporter/ssl/node.pki.vagrant.cert"
+    contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=tls.pki.vagrant\" }}{{ .Data.certificate }}{{ end }}"
+    destination="/etc/node_exporter/ssl/tls.pki.vagrant.cert"
     command = "killall -HUP node_exporter"
 }
 
 template {
-    contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=node.pki.vagrant\" }}{{ .Data.issuing_ca }}{{ end }}"
+    contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=tls.pki.vagrant\" }}{{ .Data.issuing_ca }}{{ end }}"
     destination="/etc/node_exporter/ssl/ca.cert"
     command = "killall -HUP node_exporter"
 }
 
 template {
-    contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=node.pki.vagrant\" }}{{ .Data.private_key }}{{ end }}"
-    destination="/etc/node_exporter/ssl/node.pki.vagrant.key"
+    contents="{{ with secret \"pki_int/issue/pki-dot-vagrant\" \"ttl=3m\" \"common_name=tls.pki.vagrant\" }}{{ .Data.private_key }}{{ end }}"
+    destination="/etc/node_exporter/ssl/tls.pki.vagrant.key"
     command = "killall -HUP node_exporter"
 }

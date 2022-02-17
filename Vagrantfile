@@ -14,15 +14,15 @@ Vagrant.configure("2") do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
 
-  config.vm.define :prometheus do |prom|
-    prom.vm.hostname = "prometheus.pki.vagrant"
-    prom.vm.network "private_network", ip: "192.168.56.10"
-    prom.vm.provision :shell, inline: <<-SHELL
+  config.vm.define :prometheus do |node|
+    node.vm.hostname = "prometheus.pki.vagrant"
+    node.vm.network "private_network", ip: "192.168.56.10"
+    node.vm.provision :shell, inline: <<-SHELL
     sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
     sudo yum install -y epel-release yum-utils wget
     if [ ! $(systemctl is-active vault) = "active" ]; then
       sudo yum -y install jq vault
-      sudo cp /vagrant_data/common/vault.hcl /etc/vault.d/vault.hcl
+      sudo cp /vagrant_data/insecure/vault.hcl /etc/vault.d/vault.hcl
       sudo systemctl enable vault
       sudo systemctl restart vault
       export VAULT_ADDR=http://localhost:8200
@@ -72,7 +72,7 @@ Vagrant.configure("2") do |config|
       sudo cp prometheus-2.33.3.linux-amd64/prometheus /usr/local/bin/prometheus
       sudo cp /vagrant_data/common/prometheus.service /etc/systemd/system
       sudo mkdir -p /etc/prometheus/
-      sudo cp /vagrant_data/tls/prometheus.yml /etc/prometheus/prometheus.yml
+      sudo cp /vagrant_data/common/prometheus.yml /etc/prometheus/prometheus.yml
       sudo mkdir -p /etc/prometheus/ssl
       sudo systemctl enable prometheus
       sudo systemctl restart prometheus
@@ -80,9 +80,28 @@ Vagrant.configure("2") do |config|
   SHELL
   end
 
-  config.vm.define :node do |node|
-    node.vm.hostname = "node.pki.vagrant"
+  config.vm.define :insecure do |node|
+    node.vm.hostname = "insecure.pki.vagrant"
     node.vm.network "private_network", ip: "192.168.56.11"
+    node.vm.provision :shell, inline: <<-SHELL
+    sudo yum install -y epel-release yum-utils wget
+    if [ ! $(systemctl is-active node_exporter) = "active" ]; then
+      wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz
+      tar xvf node_exporter-1.3.1.linux-amd64.tar.gz
+      sudo cp node_exporter-1.3.1.linux-amd64/node_exporter /usr/local/bin/node_exporter
+      sudo cp /vagrant_data/common/node_exporter.service /etc/systemd/system
+      sudo mkdir -p /etc/node_exporter/
+      sudo mkdir -p /etc/node_exporter/ssl
+      sudo cp /vagrant_data/insecure/node_exporter.yml /etc/node_exporter/node_exporter.yml
+      sudo systemctl enable node_exporter
+      sudo systemctl restart node_exporter
+    fi
+  SHELL
+  end
+
+  config.vm.define :tls do |node|
+    node.vm.hostname = "tls.pki.vagrant"
+    node.vm.network "private_network", ip: "192.168.56.12"
     node.vm.provision :shell, inline: <<-SHELL
     sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
     sudo yum install -y epel-release yum-utils wget
